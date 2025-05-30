@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Загрузка данных для анализа{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Загрузка CSV файлов для анализа</h3>
+            <!-- Кнопка Помощь -->
+            <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#helpModal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle-fill me-1" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247m2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/>
+                </svg>
+                Помощь
+            </button>
+        </div>
+
+        <p>Пожалуйста, загрузите CSV файлы с историческими данными по ценам закрытия ценных бумаг. Каждый файл должен соответствовать одной ценной бумаге. Название файла должно быть в формате <code>ТИКЕР.csv</code> (например, <code>AAPL.csv</code>).</p>
+        <p>Структура CSV файла (данные начинаются с 4-й строки, разделитель - запятая):</p>
+        <pre class="bg-light p-2 rounded">
+Price,Close,High,Low,Open,Volume  (Строка 1 - игнорируется)
+Ticker,AAPL,AAPL,AAPL,AAPL,AAPL (Строка 2 - игнорируется)
+Date,,,,,                       (Строка 3 - игнорируется)
+2023-05-01,167.67...,...,...,...,... (Строка 4 - данные)
+2023-05-02,166.63...,...,...,...,... (Строка 5 - данные)
+...
+        </pre>
+        <p>Для корреляционно-регрессионного анализа необходимо загрузить как минимум {{ MIN_FILES_FOR_ANALYSIS|default_if_none:"2" }} файла.</p>
+
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.csv_files.label_tag }}
+                {{ form.csv_files }}
+                {% if form.csv_files.errors %}
+                    <div class="alert alert-danger mt-1">
+                        {% for error in form.csv_files.errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-text">{{ form.csv_files.help_text }}</div>
+            </div>
+            <div class="mb-3">
+                {{ form.dependent_variable.label_tag }}
+                {{ form.dependent_variable }}
+                {% if form.dependent_variable.errors %}
+                    <div class="alert alert-danger mt-1">
+                        {% for error in form.dependent_variable.errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-text">{{ form.dependent_variable.help_text }}</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Анализировать</button>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно "Помощь" -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title d-flex align-items-baseline" id="helpModalLabel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-graph-up-arrow me-2 flex-shrink-0" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5"/>
+            </svg>
+            <span class="fs-3 fw-bold">Анализатор ценных бумаг</span>
+            <small class="ms-1 text-muted">- Помощь</small>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Анализатор ценных бумаг</strong> - это веб-приложение, предназначенное для проведения корреляционно-регрессионного анализа исторических данных по курсам ценных бумаг. Пользователь может загружать CSV-файлы с котировками, после чего приложение выполняет анализ и отображает результаты на веб-странице. Также предусмотрена возможность выгрузки результатов анализа в PDF-файл.</p>
+
+        <h4>Как использовать приложение:</h4>
+        <ol>
+            <li>
+                <strong>Загрузка данных:</strong>
+                <ul>
+                    <li>На главной странице вы увидите форму для загрузки файлов.</li>
+                    <li><strong>Выберите CSV файлы:</strong> Нажмите на кнопку выбора файлов и выберите как минимум два CSV-файла. Для выбора нескольких файлов удерживайте клавишу <code>Ctrl</code> (или <code>Cmd</code> на macOS).</li>
+                    <li><strong>Формат CSV файлов:</strong>
+                        <ul>
+                            <li>Каждый файл должен содержать данные по одной ценной бумаге.</li>
+                            <li>Название файла должно соответствовать тикеру ценной бумаги, например: <code>AAPL.csv</code>, <code>MSFT.csv</code>. Тикер будет извлечен из имени файла.</li>
+                            <li><strong>Структура данных в CSV файле (разделитель - запятая):</strong>
+                                <br>Первые три строки файла игнорируются. Начиная с четвертой строки, должны идти данные в следующем формате: <code>Date,Close,High,Low,Open,Volume</code>.
+                                <br>Для анализа используется только колонка <code>Close</code> (цена закрытия).
+                                <pre class="bg-light p-2 rounded mt-2"><code>Пример начала данных (с 4-й строки файла):
+2023-05-01,167.67691040039062,168.52720964209172,166.7376300382773,167.370409816753,52472900
+2023-05-02,166.6387481689453,168.42834281753628,165.65002884530062,168.1712661379265,48425700
+...</code></pre>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong>Тикер зависимой переменной (Y):</strong> По желанию, укажите тикер одной из загруженных бумаг, которая будет использоваться как зависимая переменная (Y) в регрессионном анализе. Если поле оставить пустым, в качестве зависимой переменной будет выбран первый тикер из списка загруженных.</li>
+                    <li>Нажмите кнопку <strong>"Анализировать"</strong>.</li>
+                </ul>
+            </li>
+            <li><strong>Просмотр результатов:</strong> После обработки данных вы будете перенаправлены на страницу с результатами, где будут отображены различные таблицы и графики анализа.</li>
+            <li><strong>Выгрузка результатов в PDF:</strong> На странице результатов анализа доступна кнопка <strong>"Скачать результаты в PDF"</strong>.</li>
+        </ol>
+        <p class="mt-3">Данные для анализа должны иметь пересекающийся временной период. Анализ будет проведен по общим датам для всех загруженных активов.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

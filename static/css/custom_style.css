@@ -1,0 +1,35 @@
+body {
+    line-height: 1.5
+}
+
+h2, h3, h4 {
+    margin-top: 1.2rem;
+    margin-bottom: .8rem
+}
+
+pre {
+    background: #f8f9fa;
+    padding: .75rem;
+    border: 1px solid #dee2e6;
+    border-radius: .25rem;
+    white-space: pre-wrap
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ced4da;
+    border-radius: .25rem
+}
+
+table {
+    font-size: .875rem
+}
+
+table th, table td {
+    padding: .25rem .5rem .25rem 0
+}
+
+@page {
+    margin: 20mm 15mm
+}

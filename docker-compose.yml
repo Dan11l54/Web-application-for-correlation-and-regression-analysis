@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    command: gunicorn finance_analysis.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app # Монтирование текущей директории в /app в контейнере для live reload
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=finance_analysis.settings
+      - PYTHONUNBUFFERED=1

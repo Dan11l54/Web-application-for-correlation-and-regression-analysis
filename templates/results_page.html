@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Результаты анализа{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <h3>Результаты анализа</h3>
+            <p><a href="{% url 'analysis_view' %}" class="btn btn-secondary btn-sm">Новый анализ</a></p>
+            <h3>Общие сведения</h3>
+            <p>Тикеры: {{ tickers|join:", " }} | Период: {{ start_date }} – {{ end_date }} | Общих
+                дней: {{ common_days_count }}</p>
+            <h4>Цены закрытия (первые строки)</h4>
+            <div class="table-responsive">{{ combined_data_html|safe }}</div>
+            <img src="data:image/png;base64,{{ price_plot_base64 }}" class="img-fluid my-3">
+            <h4>Лог-доходности (первые строки)</h4>
+            <div class="table-responsive">{{ returns_data_html|safe }}</div>
+            <h3>Корреляционный анализ</h3>
+            <div class="table-responsive">{{ correlation_matrix_html|safe }}</div>
+            <img src="data:image/png;base64,{{ correlation_heatmap_base64 }}" class="img-fluid my-3">
+            <img src="data:image/png;base64,{{ pairplot_base64 }}" class="img-fluid my-3">
+            <h3>Регрессионный анализ</h3>
+            <p>Y: <strong>{{ dependent_var_reg }}</strong> | X: <strong>{{ independent_vars_reg|join:", " }}</strong>
+            </p>
+            <pre>{{ regression_summary_text }}</pre>
+            {% if regression_plot_base64 %}
+                <img src="data:image/png;base64,{{ regression_plot_base64 }}" class="img-fluid my-3">
+            {% endif %}
+            {% if residuals_plot_base64 %}
+                <img src="data:image/png;base64,{{ residuals_plot_base64 }}" class="img-fluid my-3">
+            {% endif %}
+            {% if residuals_hist_base64 %}
+                <img src="data:image/png;base64,{{ residuals_hist_base64 }}" class="img-fluid my-3">
+            {% endif %}
+            {% if qq_plot_base64 %}
+                <img src="data:image/png;base64,{{ qq_plot_base64 }}" class="img-fluid my-3">
+            {% endif %}
+            {% if acf_plot_base64 %}
+                <img src="data:image/png;base64,{{ acf_plot_base64 }}" class="img-fluid my-3">
+            {% endif %}
+            <h4>Диагностические тесты</h4>
+            <table class="table table-bordered table-sm w-auto">
+                <tr>
+                    <th>Durbin-Watson</th>
+                    <td>{{ dw_stat }}</td>
+                </tr>
+                <tr>
+                    <th>Jarque-Bera</th>
+                    <td>{{ jb_stat }} (p={{ jb_pvalue }})</td>
+                </tr>
+            </table>
+            <h4>VIF</h4>
+            <div class="table-responsive">{{ vif_html|safe }}</div>
+            <form action="{% url 'download_pdf_view' %}" method="post" target="_blank">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Скачать PDF</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
